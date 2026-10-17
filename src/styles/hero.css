@@ -1,7 +1,13 @@
 /* ---------- Topo: a parede de mármore com o letreiro de neon ---------- */
-.hero { position: relative; isolation: isolate; overflow: hidden; background: var(--color-noite); }
-.hero.modo-d { container-type: size; height: max(100svh, 640px); }
-.hero.modo-m { min-height: 100svh; }
+/* A seção é mais alta que a tela: o topo fica preso (sticky) enquanto o letreiro explode. */
+.hero { --hero-h: 100svh; position: relative; height: calc(var(--hero-h) + 150vh); background: var(--color-noite); }
+.hero.modo-d { --hero-h: max(100svh, 640px); }
+.hero.modo-m { height: calc(var(--hero-h) + 125vh); }
+.hero.is-estatico { height: auto; }
+.hero-fixo { position: sticky; top: 0; height: var(--hero-h); overflow: clip; isolation: isolate; }
+.modo-d .hero-fixo { container-type: size; }
+.hero.is-estatico .hero-fixo { position: relative; }
+.hero.modo-m.is-estatico .hero-fixo { height: auto; min-height: 100svh; }
 
 .hero-fundo {
   position: absolute; inset: 0; z-index: 0;
@@ -10,20 +16,22 @@
 }
 
 /* O palco tem a proporção exata da arte: assim cada peça do letreiro fica no lugar certo das máscaras. */
-.palco-pos { position: absolute; inset: 0; z-index: 1; display: flex; overflow: hidden; pointer-events: none; }
+.palco-pos { position: absolute; inset: 0; z-index: 1; display: flex; overflow: clip; pointer-events: none; }
 .modo-d .palco-pos { align-items: center; justify-content: flex-end; }
 .modo-m .palco-pos { align-items: flex-start; justify-content: center; }
 .palco-rolagem { position: relative; flex: none; will-change: transform; }
-.modo-d .palco-rolagem { aspect-ratio: 1672 / 941; width: min(100cqw, calc(100cqh * 2.55)); transform-origin: 72% 46%; }
-.modo-m .palco-rolagem { aspect-ratio: 941 / 1672; width: 100%; transform-origin: 50% 24%; }
+.modo-d .palco-rolagem { aspect-ratio: 1672 / 941; width: min(100cqw, calc(100cqh * 2.55)); transform-origin: 67.6% 44%; }
+.modo-m .palco-rolagem { aspect-ratio: 941 / 1672; width: 100%; transform-origin: 50% 25%; }
 .palco { position: absolute; inset: 0; }
-.modo-d .palco {
+.peca { position: absolute; inset: 0; will-change: transform, opacity; }
+/* Só a parede inteira (apagada e acesa) ganha borda esfumada; as peças já têm máscara própria e voam livres. */
+.modo-d .borda {
   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 16%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 94%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-image: linear-gradient(to right, transparent 0%, #000 16%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 94%, transparent 100%);
   mask-composite: intersect;
 }
-.modo-m .palco {
+.modo-m .borda {
   -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 97%);
   mask-image: linear-gradient(to bottom, #000 58%, transparent 97%);
 }
@@ -36,6 +44,10 @@
 .palco-tubo, .palco-aceso, .palco-falha { opacity: 0; }
 .palco-falha { filter: grayscale(1) brightness(.28) contrast(1.15); }
 .hero.is-aceso .palco-aceso, html[data-abertura="nenhuma"] .palco-aceso { opacity: 1; }
+/* Depois da ignição as peças descansam; na explosão, acordam todas acesas. */
+.palco.tubos-dormindo:not(.explodindo) .palco-tubo { visibility: hidden; }
+.palco.explodindo .palco-tubo { visibility: visible; opacity: 1 !important; }
+.palco.explodindo .palco-falha { display: none; }
 
 /* Luz do mouse passeando pelo mármore (só com mouse). */
 .hero-luz {
@@ -67,7 +79,14 @@
   padding: var(--topo-h) var(--margem) 0;
 }
 .modo-d .hero-texto { width: min(calc(37cqw - var(--margem)), 620px); }
-.modo-m .hero-conteudo { padding: 72vw var(--margem) calc(64px + env(safe-area-inset-bottom)); }
+.modo-m .hero-conteudo { padding: 72vw var(--margem) calc(40px + env(safe-area-inset-bottom)); }
+@media (max-height: 740px) {
+  .modo-m .hero-conteudo { padding-top: 66vw; }
+  .modo-m .hero-base { display: none; }
+  .modo-m .hero-lead { font-size: .95rem; margin-top: 14px; }
+  .modo-m .hero-acoes { margin-top: 18px; }
+  .modo-m .hero-rotulo { margin-bottom: 12px; }
+}
 
 .hero-rotulo { margin-bottom: clamp(18px, 2.6vh, 28px); }
 .hero-titulo { font-size: clamp(3rem, 14.2vw, 5.6rem); }
@@ -96,3 +115,13 @@
 .hero-rolar-fio span { position: absolute; left: 0; top: 0; width: 1px; height: 46%; background: var(--color-marfim); animation: rolar 2.4s var(--ease-cortina) infinite; }
 @keyframes rolar { 0% { transform: translateY(-110%); } 100% { transform: translateY(230%); } }
 .modo-m .hero-rolar { display: none; }
+
+/* A frase que aparece no vazio depois da explosão. */
+.hero-frase {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+  text-align: center; padding-inline: var(--margem); opacity: 0;
+}
+.hero-frase-texto { font-size: clamp(3.4rem, 15vw, 11rem); line-height: .9; }
+.hero-frase-texto .italico { display: inline-block; padding-right: .05em; background: linear-gradient(90deg, var(--color-ciano-claro), #fff 45%, var(--color-violeta-claro)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-frase-linha { width: min(220px, 40vw); height: 1px; background: linear-gradient(90deg, transparent, var(--color-ciano), var(--color-violeta), transparent); box-shadow: 0 0 14px var(--color-ciano); transform-origin: center; }

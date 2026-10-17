@@ -8,11 +8,14 @@ import Rodape from './components/layout/Rodape'
 import WhatsAppFab from './components/layout/WhatsAppFab'
 import AgendarFlutuante from './components/layout/AgendarFlutuante'
 import DadosEstruturados from './components/layout/DadosEstruturados'
+import Ambiente from './components/layout/Ambiente'
 import Hero from './components/secoes/Hero'
 import type { Fase } from './components/secoes/Hero'
 import Faixa from './components/secoes/Faixa'
 import Manifesto from './components/secoes/Manifesto'
 import Cadeira from './components/secoes/Cadeira'
+import Bancada from './components/secoes/Bancada'
+import Vitrine from './components/secoes/Vitrine'
 import Tabela from './components/secoes/Tabela'
 import Agenda from './components/secoes/Agenda'
 
@@ -44,12 +47,15 @@ function Site() {
       <Faixa />
       <Manifesto />
       <Cadeira />
+      <Bancada />
+      <Vitrine />
       <Tabela />
       <Agenda />
     </main>
     <Rodape />
     <AgendarFlutuante liberado={pronto} />
     <WhatsAppFab liberado={pronto} />
+    <Ambiente liberado={pronto} />
     <DadosEstruturados />
   </>
 }

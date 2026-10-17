@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import type { CSSProperties, Ref } from 'react'
-import { animate, m, useMotionValue, useScroll, useSpring, useTransform } from 'motion/react'
+import type { CSSProperties, ReactNode, Ref } from 'react'
+import type { MotionValue } from 'motion/react'
+import { animate, easeIn, m, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
 import { ArrowDown } from 'lucide-react'
 import { HERO } from '../../content/textos'
 import { MENOR_PRECO_CORTE } from '../../content/servicos'
@@ -30,6 +31,7 @@ function mascara(arte: ArteHero, t: Tubo, folga = 1.8) {
   return `radial-gradient(ellipse ${rx.toFixed(2)}% ${ry.toFixed(2)}% at ${cx.toFixed(2)}% ${cy.toFixed(2)}%, #000 56%, transparent 100%)`
 }
 const comMascara = (g: string): CSSProperties => ({ WebkitMaskImage: g, maskImage: g })
+const centro = (arte: ArteHero, t: Tubo) => `${((t.c[0] / arte.largura) * 100).toFixed(2)}% ${((t.c[1] / arte.altura) * 100).toFixed(2)}%`
 
 /* Ordem em que o letreiro acende: postes, bigode, GUSTA, til, CORTE$, bigode, engrenagem e cifrão. [id, início em s, jeito de piscar] */
 const ORDEM: readonly [string, number, number][] = [
@@ -45,6 +47,24 @@ const PISCADAS = [
 /** Peças que, de vez em quando, dão aquela falhada de neon velho. */
 const FALHAM = ['cifrao', 'engrenagem', 'til', 'bigode-baixo', 'cifrao']
 
+/*
+  A explosão: com a rolagem, cada peça do letreiro voa para fora do centro e vem para perto da câmera.
+  [x %, y % (da arte), escala, giro em graus]
+*/
+type Voo = [number, number, number, number]
+const VOO_D: Record<string, Voo> = {
+  'poste-e': [-30, 8, 1.55, -16], 'poste-d': [30, 10, 1.55, 16],
+  'bigode-cima': [-2, -44, 2, -8], 'gusta': [-8, -20, 2.3, -4], 'til': [6, 0, 3.2, 14],
+  'cortes': [8, 22, 2.3, 4], 'bigode-baixo': [3, 46, 2, 8],
+  'engrenagem': [26, -36, 1.9, 240], 'cifrao': [28, 36, 1.9, -50],
+}
+const VOO_M: Record<string, Voo> = {
+  'poste-e': [-78, 10, 1.6, -22], 'poste-d': [78, 12, 1.6, 22],
+  'bigode-cima': [-6, -42, 2, -10], 'gusta': [-22, -26, 2.1, -6], 'til': [10, 0, 3, 16],
+  'cortes': [22, 28, 2.1, 6], 'bigode-baixo': [6, 44, 2, 10],
+  'engrenagem': [70, -34, 1.9, 260], 'cifrao': [72, 34, 1.9, -60],
+}
+
 function Camada({ arte, className, style, imgRef, onCarregou, prioridade = false }: {
   arte: ArteHero; className: string; style?: CSSProperties; imgRef?: Ref<HTMLImageElement>; onCarregou?: () => void; prioridade?: boolean
 }) {
@@ -55,16 +75,41 @@ function Camada({ arte, className, style, imgRef, onCarregou, prioridade = false
   </picture>
 }
 
+/** Uma peça do letreiro: a camada mascarada (que pisca na ignição) dentro de um suporte que voa com a rolagem. */
+function Peca({ arte, tubo, p, voo, imgRef, estatico, desfoque }: { arte: ArteHero; tubo: Tubo; p: MotionValue<number>; voo: Voo; imgRef: Ref<HTMLImageElement>; estatico: boolean; desfoque: number }) {
+  const op = { ease: easeIn }
+  const x = useTransform(p, [.24, .86], ['0%', `${voo[0]}%`], op)
+  const y = useTransform(p, [.24, .86], ['0%', `${voo[1]}%`], op)
+  const scale = useTransform(p, [.24, .86], [1, voo[2]], op)
+  const rotate = useTransform(p, [.24, .86], [0, voo[3]], op)
+  const opacity = useTransform(p, [.62, .9], [1, 0])
+  const filter = useTransform(p, [.4, .86], ['blur(0px)', `blur(${desfoque}px)`])
+  const estilo = estatico ? { transformOrigin: centro(arte, tubo) } : desfoque ? { x, y, scale, rotate, opacity, filter, transformOrigin: centro(arte, tubo) } : { x, y, scale, rotate, opacity, transformOrigin: centro(arte, tubo) }
+  return <m.div className="peca" style={estilo}>
+    <Camada arte={arte} className="palco-tubo" imgRef={imgRef} style={comMascara(mascara(arte, tubo))} />
+  </m.div>
+}
+
+/** Suporte que só some com a rolagem (para a base e o letreiro inteiro passarem a vez às peças). */
+function Some({ p, de, ate, estatico, children }: { p: MotionValue<number>; de: number; ate: number; estatico: boolean; children: ReactNode }) {
+  const opacity = useTransform(p, [de, ate], [1, 0])
+  return <m.div className="peca borda" style={estatico ? undefined : { opacity }}>{children}</m.div>
+}
+
 /**
- * Topo: a parede de mármore com o letreiro de neon. Depois do carregamento, o neon acende
- * peça por peça, piscando como tubo de verdade; aí o texto entra.
+ * Topo: a parede de mármore com o letreiro de neon.
+ * 1. Depois do carregamento, o neon acende peça por peça, piscando como tubo de verdade; aí o texto entra.
+ * 2. Ao rolar, o topo fica preso: o texto sai, o letreiro vem para o centro e explode em peças que voam
+ *    na direção da câmera; no vazio que fica, aparece a frase da casa.
  * Desktop: letreiro ancorado à direita. Celular: letreiro no alto, texto embaixo. O letreiro nunca é cortado.
  */
 export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => void }) {
   const { reduced } = useMotionPreferences()
   const desktop = useMedia(MQ_DESKTOP, true)
   const arte = desktop ? HERO_DESKTOP : HERO_MOBILE
+  const voos = desktop ? VOO_D : VOO_M
   const ref = useRef<HTMLElement>(null)
+  const palco = useRef<HTMLDivElement>(null)
   const base = useRef<HTMLImageElement>(null)
   const aceso = useRef<HTMLImageElement>(null)
   const falha = useRef<HTMLImageElement>(null)
@@ -76,8 +121,7 @@ export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => voi
   /* Se a arte já estava no cache, avisa a abertura na hora. */
   useEffect(() => { if (base.current?.complete) avisaHeroCarregado() }, [])
 
-  /* A ignição. */
-  /* As animações da ignição seguem até o fim mesmo quando o texto já entrou (fase "pronto"); só param se o topo sair da página. */
+  /* A ignição. As animações seguem até o fim mesmo quando o texto já entrou; só param se o topo sair da página. */
   const ignicao = useRef<{ anim: { stop: () => void }[]; t: number }>({ anim: [], t: 0 })
   useEffect(() => () => { ignicao.current.anim.forEach(a => a.stop()); clearTimeout(ignicao.current.t) }, [])
   useEffect(() => {
@@ -93,11 +137,12 @@ export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => voi
       })
       const final = animate(luz, { opacity: [0, 1] }, { duration: 1.05, delay: 2.85, ease: [0.4, 0, 0.2, 1] })
       anim.push(final)
-      /* Com o letreiro inteiro aceso por cima, as camadas de cada peça saem de cena (menos trabalho para a placa de vídeo). */
-      final.finished.then(() => tubos.current.forEach(el => { el.style.visibility = 'hidden' })).catch(() => {})
+      /* Com o letreiro inteiro aceso por cima, as peças descansam (menos trabalho para a placa de vídeo) até a explosão. */
+      final.finished.then(() => palco.current?.classList.add('tubos-dormindo')).catch(() => {})
       ignicao.current.t = window.setTimeout(onAceso, 2950)
     } else {
       anim.push(animate(luz, { opacity: [0, .9, .3, 1] }, { duration: .8, times: [0, .35, .55, 1], delay: .1, ease: 'linear' }))
+      palco.current?.classList.add('tubos-dormindo')
       ignicao.current.t = window.setTimeout(onAceso, 380)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,7 +156,7 @@ export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => voi
       t = window.setTimeout(() => {
         const el = falha.current
         const tubo = arte.tubos.find(x => x.id === FALHAM[Math.floor(Math.random() * FALHAM.length)])
-        if (el && tubo) {
+        if (el && tubo && !palco.current?.classList.contains('explodindo')) {
           const g = mascara(arte, tubo, 1.5)
           el.style.setProperty('-webkit-mask-image', g)
           el.style.setProperty('mask-image', g)
@@ -124,18 +169,27 @@ export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => voi
     return () => clearTimeout(t)
   }, [pronto, reduced, ativo, arte])
 
-  /* Rolagem: a parede se aproxima e escurece, o texto sobe. */
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const escala = useTransform(scrollYProgress, [0, 1], [1, 1.08])
-  const yPalco = useTransform(scrollYProgress, [0, 1], ['0%', '9%'])
-  const yTexto = useTransform(scrollYProgress, [0, 1], ['0%', '-16%'])
-  const opTexto = useTransform(scrollYProgress, [0, .75], [1, 0])
-  const veu = useTransform(scrollYProgress, [0, 1], [0, .7])
+  /* Rolagem: o topo fica preso enquanto o letreiro explode (p de 0 a 1). */
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const p = useSpring(scrollYProgress, { stiffness: 170, damping: 32, mass: .35 })
+  useMotionValueEvent(p, 'change', v => palco.current?.classList.toggle('explodindo', v > .2))
+  const xPalco = useTransform(p, [0, .34], ['0%', desktop ? '-17.6%' : '0%'])
+  const yPalco = useTransform(p, [0, .34], ['0%', desktop ? '0%' : '34%'])
+  const escala = useTransform(p, [0, .34, 1], [1, desktop ? 1.06 : 1.04, 1.12])
+  const yTexto = useTransform(p, [0, .24], [0, -70])
+  const opTexto = useTransform(p, [0, .2], [1, 0])
+  const blurTexto = useTransform(p, [0, .22], ['blur(0px)', 'blur(10px)'])
+  const veu = useTransform(p, [.88, 1], [0, .9])
+  const sombra = useTransform(p, [0, .25], [1, 0])
+  const opFrase = useTransform(p, [.5, .66, .9, 1], [0, 1, 1, 0])
+  const escFrase = useTransform(p, [.48, .72, 1], [.86, 1, 1.04])
+  const blurFrase = useTransform(p, [.48, .68], ['blur(14px)', 'blur(0px)'])
+  const linhaFrase = useTransform(p, [.62, .8], [0, 1])
 
   /* Mouse: a parede acompanha de leve e uma luz passeia pelo mármore. */
   const mx = useMotionValue(0), my = useMotionValue(0)
-  const px = useSpring(useTransform(mx, [-1, 1], [12, -12]), { stiffness: 60, damping: 18 })
-  const py = useSpring(useTransform(my, [-1, 1], [8, -8]), { stiffness: 60, damping: 18 })
+  const px = useSpring(useTransform(mx, [-1, 1], [14, -14]), { stiffness: 60, damping: 18 })
+  const py = useSpring(useTransform(my, [-1, 1], [9, -9]), { stiffness: 60, damping: 18 })
   useEffect(() => {
     const el = ref.current
     if (reduced || !pronto || !el || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
@@ -145,9 +199,8 @@ export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => voi
       mx.set((ex / window.innerWidth) * 2 - 1); my.set((ey / window.innerHeight) * 2 - 1)
       if (!raf) raf = requestAnimationFrame(() => {
         raf = 0
-        const r = el.getBoundingClientRect()
-        el.style.setProperty('--lx', `${ex - r.left}px`)
-        el.style.setProperty('--ly', `${ey - r.top}px`)
+        el.style.setProperty('--lx', `${ex}px`)
+        el.style.setProperty('--ly', `${ey}px`)
         el.classList.add('com-luz')
       })
     }
@@ -168,42 +221,51 @@ export default function Hero({ fase, onAceso }: { fase: Fase; onAceso: () => voi
 
   const registra = (id: string) => (el: HTMLImageElement | null) => { if (el) tubos.current.set(id, el); else tubos.current.delete(id) }
 
-  return <section ref={ref} id="topo" className={`hero ${desktop ? 'modo-d' : 'modo-m'} ${pronto ? 'is-aceso' : ''}`} aria-labelledby="hero-titulo">
-    <div className="hero-fundo" aria-hidden="true" />
-    <div className="palco-pos" aria-hidden="true">
-      <m.div className="palco-rolagem" style={reduced ? undefined : { scale: escala, y: yPalco }}>
-        <m.div className="palco" style={reduced ? undefined : { x: px, y: py }}>
-          <Camada arte={arte} className="palco-apagado" imgRef={base} onCarregou={avisaHeroCarregado} prioridade />
-          {arte.tubos.map(t => <Camada key={t.id} arte={arte} className="palco-tubo" imgRef={registra(t.id)} style={comMascara(mascara(arte, t))} />)}
-          <Camada arte={arte} className="palco-aceso" imgRef={aceso} />
-          <Camada arte={arte} className="palco-falha" imgRef={falha} />
+  return <section ref={ref} id="topo" className={`hero ${desktop ? 'modo-d' : 'modo-m'} ${pronto ? 'is-aceso' : ''} ${reduced ? 'is-estatico' : ''}`} aria-labelledby="hero-titulo">
+    <div className="hero-fixo">
+      <div className="hero-fundo" aria-hidden="true" />
+      <div className="palco-pos" aria-hidden="true">
+        <m.div className="palco-rolagem" style={reduced ? undefined : { x: xPalco, y: yPalco, scale: escala }}>
+          <m.div ref={palco} className="palco" style={reduced ? undefined : { x: px, y: py }}>
+            <Some p={p} de={.22} ate={.32} estatico={reduced}><Camada arte={arte} className="palco-apagado" imgRef={base} onCarregou={avisaHeroCarregado} prioridade /></Some>
+            {arte.tubos.map(t => <Peca key={t.id} arte={arte} tubo={t} p={p} voo={voos[t.id] ?? [0, 0, 1, 0]} imgRef={registra(t.id)} estatico={reduced} desfoque={desktop ? 6 : 0} />)}
+            <Some p={p} de={.2} ate={.28} estatico={reduced}><Camada arte={arte} className="palco-aceso" imgRef={aceso} /></Some>
+            <Camada arte={arte} className="palco-falha" imgRef={falha} />
+          </m.div>
         </m.div>
-      </m.div>
-    </div>
-    <div className="hero-luz" aria-hidden="true" />
-    <div className="hero-sombra" aria-hidden="true" />
-    <m.div className="hero-veu" aria-hidden="true" style={reduced ? undefined : { opacity: veu }} />
-
-    <m.div className="hero-conteudo" style={reduced ? undefined : { y: yTexto, opacity: opTexto }}>
-      <div className="hero-texto">
-        <m.p className="rotulo hero-rotulo" {...surge(.05)}>{HERO.rotulo}</m.p>
-        <Titulo as="h1" id="hero-titulo" className="display hero-titulo" linhas={HERO.titulo} italico={[1]} ativo={entrou} atraso={.12}
-          rotulo={`${SITE.nome}: ${HERO.titulo.join(' ')}`} />
-        <m.p className="lead hero-lead" {...surge(.42)}>{HERO.texto}</m.p>
-        <m.div className="hero-acoes" {...surge(.56)}>
-          <Botao href={AGENDA} variante="marfim" rotuloAcessivel={`${HERO.cta} (abre a agenda em nova aba)`}>{HERO.cta}</Botao>
-          <a className="link-linha" href="#tabela">{HERO.link}<ArrowDown aria-hidden="true" strokeWidth={1.6} /></a>
-        </m.div>
-        <m.ul className="hero-base" {...surge(.7)}>
-          <li><span className="hero-base-rotulo">{HERO.meta}</span> <span className="num">R$ {MENOR_PRECO_CORTE}</span></li>
-          {INSTAGRAM_URL && <li><a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hero-insta"><BrandIcon brand="instagram" />@{SITE.instagram}</a></li>}
-        </m.ul>
       </div>
-    </m.div>
+      <div className="hero-luz" aria-hidden="true" />
+      <m.div className="hero-sombra" aria-hidden="true" style={reduced ? undefined : { opacity: sombra }} />
 
-    <m.a href="#manifesto" className="hero-rolar" aria-label="Rolar para o conteúdo" {...surge(.9)}>
-      <span className="hero-rolar-fio" aria-hidden="true"><span className="anima-continua" /></span>
-      <span>{HERO.rolar}</span>
-    </m.a>
+      <m.div className="hero-conteudo" style={reduced ? undefined : { y: yTexto, opacity: opTexto, filter: blurTexto }}>
+        <div className="hero-texto">
+          <m.p className="rotulo hero-rotulo" {...surge(.05)}>{HERO.rotulo}</m.p>
+          <Titulo as="h1" id="hero-titulo" className="display hero-titulo" linhas={HERO.titulo} italico={[1]} ativo={entrou} atraso={.12}
+            rotulo={`${SITE.nome}: ${HERO.titulo.join(' ')}`} />
+          <m.p className="lead hero-lead" {...surge(.42)}>{HERO.texto}</m.p>
+          <m.div className="hero-acoes" {...surge(.56)}>
+            <Botao href={AGENDA} variante="marfim" rotuloAcessivel={`${HERO.cta} (abre a agenda em nova aba)`}>{HERO.cta}</Botao>
+            <a className="link-linha" href="#tabela">{HERO.link}<ArrowDown aria-hidden="true" strokeWidth={1.6} /></a>
+          </m.div>
+          <m.ul className="hero-base" {...surge(.7)}>
+            <li><span className="hero-base-rotulo">{HERO.meta}</span> <span className="num">R$ {MENOR_PRECO_CORTE}</span></li>
+            {INSTAGRAM_URL && <li><a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hero-insta"><BrandIcon brand="instagram" />@{SITE.instagram}</a></li>}
+          </m.ul>
+        </div>
+        <m.a href="#manifesto" className="hero-rolar" aria-label="Rolar para o conteúdo" {...surge(.9)}>
+          <span className="hero-rolar-fio" aria-hidden="true"><span className="anima-continua" /></span>
+          <span>{HERO.rolar}</span>
+        </m.a>
+      </m.div>
+
+      {!reduced && <m.div className="hero-frase" aria-hidden="true" style={{ opacity: opFrase, scale: escFrase, filter: blurFrase }}>
+        <p className="rotulo">{HERO.fraseRotulo}</p>
+        <p className="display hero-frase-texto">{HERO.frase[0]}<br /><span className="italico">{HERO.frase[1]}</span></p>
+        <m.span className="hero-frase-linha" style={{ scaleX: linhaFrase }} />
+      </m.div>}
+
+      <m.div className="hero-veu" aria-hidden="true" style={reduced ? undefined : { opacity: veu }} />
+
+    </div>
   </section>
 }

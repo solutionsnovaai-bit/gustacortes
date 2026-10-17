@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { m, useScroll, useTransform } from 'motion/react'
+import { m, useMotionValueEvent, useScroll, useSpring, useTransform, useVelocity } from 'motion/react'
 import { AGENDA_TXT } from '../../content/textos'
 import { QR_AGENDA } from '../../content/qr'
 import { MENSAGENS, SITE } from '../../config/site'
@@ -22,7 +22,26 @@ export default function Agenda() {
   const yPostes = useTransform(scrollYProgress, [0, 1], ['14%', '-14%'])
   const brilho = useTransform(scrollYProgress, [.15, .45], [0, 1])
 
-  return <section ref={ref} id="agenda" className="secao agenda tema-noite" aria-labelledby="agenda-titulo">
+  /* A seção chega como um cartão e abre até ocupar a tela inteira. */
+  const { scrollYProgress: entrada } = useScroll({ target: ref, offset: ['start end', 'start start'] })
+  const abre = useSpring(entrada, { stiffness: 120, damping: 28, mass: .4 })
+  const clipPath = useTransform(abre, v => {
+    const k = 1 - Math.min(1, Math.max(0, v))
+    return `inset(${(k * 9).toFixed(2)}% ${(k * 7).toFixed(2)}% 0% ${(k * 7).toFixed(2)}% round ${(k * 48).toFixed(1)}px ${(k * 48).toFixed(1)}px 0px 0px)`
+  })
+  const escalaCartao = useTransform(abre, [0, 1], [.94, 1])
+
+  /* Os postes giram mais rápido quando você rola rápido. */
+  const { scrollY } = useScroll()
+  const vel = useVelocity(scrollY)
+  useMotionValueEvent(vel, 'change', v => {
+    if (reduced || !ref.current) return
+    const taxa = 1 + Math.min(7, Math.abs(v) / 450)
+    ref.current.querySelectorAll<HTMLElement>('.poste-listras').forEach(el => el.getAnimations().forEach(a => { a.playbackRate = v < -40 ? -taxa : taxa }))
+  })
+
+  return <section ref={ref} id="agenda" className="agenda tema-noite" aria-labelledby="agenda-titulo">
+    <m.div className="secao agenda-cartao marmore" style={reduced ? undefined : { clipPath, scale: escalaCartao }}>
     <m.div className="agenda-halo" aria-hidden="true" style={reduced ? undefined : { opacity: brilho }} />
     <div className="conteiner">
       <div className="agenda-placa">
@@ -68,5 +87,6 @@ export default function Agenda() {
         </Revelar>
       </div>
     </div>
+    </m.div>
   </section>
 }

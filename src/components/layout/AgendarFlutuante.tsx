@@ -5,7 +5,7 @@ import { useInercia } from '../../hooks/useInercia'
 
 /*
   Pílula "Agendar" que flutua no canto esquerdo depois que o botão do topo sai da tela.
-  Some quando a seção da agenda ou o rodapé estão na tela (lá já tem botão grande). Mesma inércia do balão.
+  Some quando o topo, a vitrine, a agenda ou o rodapé estão na tela (lá já tem botão grande). Mesma inércia do balão.
 */
 export default function AgendarFlutuante({ liberado }: { liberado: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null)
@@ -19,7 +19,7 @@ export default function AgendarFlutuante({ liberado }: { liberado: boolean }) {
       es.forEach(e => { if (e.isIntersecting) visiveis.add(e.target.id); else visiveis.delete(e.target.id) })
       setMostra(visiveis.size === 0)
     }, { threshold: .12 })
-    ;['topo', 'agenda', 'contato'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el) })
+    ;['topo', 'vitrine', 'agenda', 'contato'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el) })
     return () => io.disconnect()
   }, [liberado])
 

@@ -4,6 +4,7 @@
 
 export const NAV = [
   { href: '#casa', rotulo: 'A casa' },
+  { href: '#vitrine', rotulo: 'Serviços' },
   { href: '#tabela', rotulo: 'Valores' },
   { href: '#agenda', rotulo: 'Agenda' },
   { href: '#contato', rotulo: 'Contato' },
@@ -21,6 +22,9 @@ export const HERO = {
   link: 'Ver valores',
   meta: 'Corte a partir de',
   rolar: 'Role',
+  /** Frase que aparece no vazio depois que o letreiro explode. */
+  fraseRotulo: 'Bem-vindo à casa',
+  frase: ['Corte é', 'assinatura.'],
 } as const
 
 export const FAIXA = ['Corte', 'Barba', 'Degradê', 'Penteado', 'Luzes', 'Progressiva', 'Alisante'] as const
@@ -41,8 +45,31 @@ export const CADEIRA = {
   ],
 } as const
 
+/** A bancada: as ferramentas, uma por painel, correndo na horizontal. */
+export const BANCADA = {
+  rotulo: '02 — A bancada',
+  titulo: ['Cinco ferramentas,', 'uma régua.'],
+  texto: 'Cada corte passa por elas. Role e conheça a bancada do Gusta.',
+  pecas: [
+    { id: 'tesoura', nome: 'A tesoura', papel: 'O detalhe', texto: 'Ponta, volume e textura: o acerto fino onde a máquina não chega.', cor: 'ciano' },
+    { id: 'navalha', nome: 'A navalha', papel: 'O acabamento', texto: 'A linha limpa do contorno, do pezinho e da barba.', cor: 'violeta' },
+    { id: 'maquina', nome: 'A máquina', papel: 'O degradê', texto: 'Do zero ao topo, a transição que faz o corte ter nome.', cor: 'ciano' },
+    { id: 'pente', nome: 'O pente', papel: 'A régua', texto: 'Cada medida no lugar antes do primeiro passe.', cor: 'violeta' },
+    { id: 'poste', nome: 'O poste', papel: 'A tradição', texto: 'O símbolo das barbearias, girando aqui também.', cor: 'ciano' },
+  ],
+  fim: 'Agora escolhe o seu.',
+} as const
+
+/** A vitrine: os serviços num carrossel 3D que gira com a rolagem (e com o dedo). */
+export const VITRINE = {
+  rotulo: '03 — Serviços',
+  titulo: ['Escolhe', 'o seu.'],
+  dica: 'Arraste ou role',
+  agendar: 'Agendar',
+} as const
+
 export const TABELA = {
-  rotulo: '02 — Valores',
+  rotulo: '04 — Valores',
   titulo: 'A tabela',
   texto: 'Toca no serviço e vai direto pra agenda.',
   nota: 'Valores de referência. O valor final aparece na hora de agendar.',
@@ -51,7 +78,7 @@ export const TABELA = {
 } as const
 
 export const AGENDA_TXT = {
-  rotulo: '03 — Agenda',
+  rotulo: '05 — Agenda',
   neon: ['agenda', 'aberta'],
   titulo: ['Três toques', 'e o horário é seu.'],
   passos: [

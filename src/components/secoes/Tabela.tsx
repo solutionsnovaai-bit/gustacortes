@@ -13,6 +13,7 @@ import { useMotionPreferences } from '../../hooks/useMotionPreferences'
 import BrandIcon from '../ui/BrandIcon'
 import Foto from '../ui/Foto'
 import Neon from '../ui/Neon'
+import Placar from '../ui/Placar'
 import Revelar, { Rotulo } from '../ui/Revelar'
 
 /** O "&" dos combos em itálico, como nos cardápios de alfaiataria. */
@@ -26,11 +27,12 @@ function Lista({ grupo, indice }: { grupo: Grupo; indice: number }) {
     </Revelar>
     <ul className="tabela-lista">
       {grupo.itens.map((s, i) => <Revelar as="li" key={s.nome} delay={i * .06} y={20}>
-        <a className="tabela-linha" href={AGENDA} target="_blank" rel="noopener noreferrer"
-          aria-label={`${s.nome}, R$ ${reais(s.preco)}. ${TABELA.agendar} (abre a agenda em nova aba)`}>
+        <a className="tabela-linha" href={AGENDA} target="_blank" rel="noopener noreferrer" data-cursor="Agendar"
+          aria-label={`${s.nome}, R$ ${reais(s.preco)}. ${TABELA.agendar} (abre a agenda em nova aba)`}
+          onPointerMove={e => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`) }}>
           <span className="tabela-nome">{comE(s.nome)}</span>
           <span className="tabela-pontos" aria-hidden="true" />
-          <span className="tabela-preco" aria-hidden="true"><span className="tabela-rs">R$</span><span className="num">{reais(s.preco)}</span><span className="tabela-cent num">,00</span></span>
+          <span className="tabela-preco" aria-hidden="true"><span className="tabela-rs">R$</span><Placar valor={s.preco} className="num" /><span className="tabela-cent num">,00</span></span>
           <span className="tabela-detalhe" aria-hidden="true">{s.detalhe}</span>
           <span className="tabela-agendar" aria-hidden="true">{TABELA.agendar}<ArrowUpRight strokeWidth={1.6} /></span>
         </a>

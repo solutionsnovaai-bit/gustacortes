@@ -43,6 +43,8 @@ export default function Cadeira() {
   const foco = useTransform(p, [.04, .3], [0, 1])
   const brilho = useTransform(p, [.28, .72], [100, 0])
   const brilhoPos = useTransform(brilho, v => `${v}% 0`)
+  const xFundo = useTransform(p, [0, 1], ['6%', '-48%'])
+  const xFundo2 = useTransform(p, [0, 1], ['-40%', '4%'])
 
   if (reduced) {
     return <section id="casa" className="cadeira is-estatica tema-noite" aria-labelledby="cadeira-titulo">
@@ -64,6 +66,10 @@ export default function Cadeira() {
   return <section id="casa" className="cadeira" aria-labelledby="cadeira-titulo">
     <div ref={cena} className="cadeira-cena">
       <div className="cadeira-palco tema-noite">
+        <div className="cadeira-fundo" aria-hidden="true">
+          <m.p style={{ x: xFundo }}>Senta · Senta · Senta · Senta ·</m.p>
+          <m.p style={{ x: xFundo2 }} className="is-cheio">na cadeira · na cadeira · na cadeira ·</m.p>
+        </div>
         <div className="conteiner cadeira-grade">
           <div className="cadeira-cabeca">
             <Rotulo>{CADEIRA.rotulo}</Rotulo>
