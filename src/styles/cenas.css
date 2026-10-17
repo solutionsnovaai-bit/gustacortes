@@ -254,6 +254,7 @@
 .tabela-linha { isolation: isolate; }
 
 /* ---------- Rodapé revelado por baixo (computador com tela alta) ---------- */
+.contato-ancora { height: 1px; margin-top: -1px; }
 @media (min-width: 1024px) and (min-height: 860px) {
   main#conteudo { position: relative; z-index: 1; background: var(--color-noite); box-shadow: 0 40px 80px rgb(0 0 0 / .8); }
   .rodape { position: sticky; bottom: 0; z-index: 0; padding-top: 96px; }

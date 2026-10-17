@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { m, useScroll, useTransform } from 'motion/react'
 import { CalendarDays, MapPin, Pause, Play } from 'lucide-react'
 import { NAV, RODAPE } from '../../content/textos'
@@ -14,11 +14,21 @@ import { Titulo } from '../ui/Revelar'
 export default function Rodape() {
   const { reduced, paused, toggle } = useMotionPreferences()
   const ref = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end end'] })
-  const escala = useTransform(scrollYProgress, [0, 1], [.86, 1])
-  const op = useTransform(scrollYProgress, [0, .55], [.2, 1])
+  /* O rodapé pode ficar preso embaixo (revelado pela página), então a conta é pela rolagem da página toda:
+     a fração final que corresponde à altura dele. */
+  const { scrollYProgress } = useScroll()
+  const [fatia, setFatia] = useState(.08)
+  useEffect(() => {
+    const medir = () => { const el = ref.current; if (el) setFatia(Math.min(.5, el.offsetHeight / Math.max(1, document.documentElement.scrollHeight - window.innerHeight))) }
+    medir()
+    const ro = new ResizeObserver(medir)
+    ro.observe(document.body)
+    return () => ro.disconnect()
+  }, [])
+  const escala = useTransform(scrollYProgress, [1 - fatia, 1], [.86, 1])
+  const op = useTransform(scrollYProgress, [1 - fatia, 1 - fatia * .45], [.2, 1])
 
-  return <footer ref={ref} id="contato" className="rodape tema-noite">
+  return <footer ref={ref} id="rodape" className="rodape tema-noite">
     <div className="conteiner rodape-topo">
       <m.div className="rodape-letreiro" style={reduced ? undefined : { scale: escala, opacity: op }}>
         <Foto img={LETREIRO} alt={`Letreiro de neon da ${SITE.nome}`} sizes="(max-width: 767px) 92vw, 640px" />

@@ -51,6 +51,8 @@ function Site() {
       <Vitrine />
       <Tabela />
       <Agenda />
+      {/* Marca onde o rodapé começa a aparecer (no computador ele fica preso embaixo, revelado pela página). */}
+      <div id="contato" className="contato-ancora" aria-hidden="true" />
     </main>
     <Rodape />
     <AgendarFlutuante liberado={pronto} />

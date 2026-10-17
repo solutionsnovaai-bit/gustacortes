@@ -16,7 +16,11 @@ export default function AgendarFlutuante({ liberado }: { liberado: boolean }) {
     if (!liberado) return
     const visiveis = new Set<string>()
     const io = new IntersectionObserver(es => {
-      es.forEach(e => { if (e.isIntersecting) visiveis.add(e.target.id); else visiveis.delete(e.target.id) })
+      es.forEach(e => {
+        /* O fim da página conta como "na tela" a partir do momento em que passa da borda de baixo. */
+        const naTela = e.target.id === 'contato' ? e.boundingClientRect.top < window.innerHeight : e.isIntersecting
+        if (naTela) visiveis.add(e.target.id); else visiveis.delete(e.target.id)
+      })
       setMostra(visiveis.size === 0)
     }, { threshold: .12 })
     ;['topo', 'vitrine', 'agenda', 'contato'].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el) })
