@@ -1,0 +1,199 @@
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: auto;
+  scroll-padding-top: calc(var(--topo-h) + 12px);
+  overflow-x: clip;
+  background: var(--color-noite);
+  color-scheme: dark;
+}
+html.travado, html.travado body { overflow: hidden; }
+body {
+  margin: 0;
+  min-height: 100svh;
+  background-color: var(--color-noite);
+  color: var(--color-marfim);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.6;
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+img, svg, video { display: block; max-width: 100%; }
+picture { display: contents; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+h1, h2, h3, h4, p, ul, ol, figure, blockquote, address { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+address { font-style: normal; }
+html { scrollbar-width: thin; scrollbar-color: #2a2c31 var(--color-noite); }
+::selection { background: var(--color-ciano); color: var(--color-noite); }
+:focus-visible { outline: 2px solid var(--color-ciano); outline-offset: 4px; border-radius: 4px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.pular-link {
+  position: fixed; left: 16px; top: 12px; z-index: 200;
+  padding: 10px 16px; border-radius: 999px;
+  background: var(--color-marfim); color: var(--color-noite); font-weight: 600;
+  transform: translateY(-160%); transition: transform .3s var(--ease-luxo);
+}
+.pular-link:focus-visible { transform: none; }
+
+/* ---------- Mármore: a parede da barbearia, por trás das seções escuras ---------- */
+.marmore { position: relative; isolation: isolate; }
+.marmore::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: image-set(url('/fundo/marmore.avif') type('image/avif'), url('/fundo/marmore.webp') type('image/webp'));
+  background-size: cover; background-position: center;
+  opacity: .45;
+}
+/* Grão de filme bem fino, desenhado pelo navegador. */
+.grao::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: .07; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ---------- Layout ---------- */
+.conteiner { width: min(100% - 2 * var(--margem), var(--largura)); margin-inline: auto; position: relative; }
+.secao { position: relative; padding-block: var(--secao-y); }
+.tema-noite { background-color: var(--color-noite); color: var(--color-marfim); }
+
+/* ---------- Tipografia ---------- */
+/* Display: a Didone das capas de revista de moda. O tamanho óptico acompanha o tamanho do texto. */
+.display {
+  font-family: var(--font-serif);
+  font-weight: 460;
+  font-optical-sizing: auto;
+  line-height: .94;
+  letter-spacing: -.022em;
+  text-wrap: balance;
+}
+.italico { font-style: italic; font-weight: 420; letter-spacing: -.03em; }
+.rotulo {
+  font-family: var(--font-sans);
+  font-size: .72rem; font-weight: 600;
+  letter-spacing: .34em; text-transform: uppercase;
+  color: var(--texto-3);
+}
+.lead { font-size: clamp(1.02rem, 1.2vw, 1.16rem); line-height: 1.62; color: var(--texto-2); max-width: 42ch; text-wrap: pretty; }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* Linhas mascaradas (títulos) */
+.linhas { display: block; }
+.linha-mascara { display: block; overflow: clip; padding-bottom: .1em; margin-bottom: -.1em; }
+.linha-mascara > span { display: block; }
+
+/* ---------- Neon (palavra em tubo de vidro) ---------- */
+.neon { position: relative; display: inline-block; font-family: var(--font-neon); font-weight: 600; line-height: 1; letter-spacing: .01em; }
+.neon-vidro { color: transparent; -webkit-text-stroke: 1px rgb(242 238 230 / .16); }
+.neon-luz {
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  color: var(--n-nucleo); text-shadow: var(--n-brilho);
+}
+.neon-ciano { --n-nucleo: var(--color-ciano-claro); --n-brilho: var(--brilho-ciano); }
+.neon-violeta { --n-nucleo: var(--color-violeta-claro); --n-brilho: var(--brilho-violeta); }
+.neon-verde { --n-nucleo: #E4FFEC; --n-brilho: 0 0 1px #fff, 0 0 6px var(--color-verde), 0 0 18px rgb(61 255 126 / .6), 0 0 40px rgb(61 255 126 / .3); }
+
+/* ---------- Botões ---------- */
+.botao {
+  --b-fundo: var(--color-marfim);
+  --b-texto: var(--color-noite);
+  --b-hover: var(--color-ciano);
+  --b-hover-texto: var(--color-noite);
+  --b-icone: var(--color-noite);
+  --b-icone-cor: var(--color-marfim);
+  --b-sombra: 0 0 0 rgb(0 0 0 / 0);
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; gap: 14px;
+  min-height: 60px; padding: 7px 26px 7px 7px;
+  border-radius: 999px;
+  background: var(--b-fundo); color: var(--b-texto);
+  font-weight: 650; font-size: 1rem; letter-spacing: .01em; line-height: 1.1;
+  overflow: hidden;
+  box-shadow: var(--b-sombra);
+  transition: color .5s var(--ease-luxo), box-shadow .6s var(--ease-luxo);
+  -webkit-tap-highlight-color: transparent;
+}
+.botao::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: var(--b-hover); border-radius: inherit;
+  transform: translate3d(0, 101%, 0);
+  transition: transform .6s var(--ease-luxo);
+}
+.botao-icone {
+  display: grid; place-items: center; flex: none;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--b-icone); color: var(--b-icone-cor);
+  transition: background-color .5s var(--ease-luxo), color .5s var(--ease-luxo), transform .6s var(--ease-mola);
+}
+.botao-icone svg { width: 20px; height: 20px; }
+.botao-rolo { position: relative; display: block; overflow: hidden; padding-block: 2px; white-space: nowrap; }
+.botao-rolo > span { display: block; transition: transform .6s var(--ease-luxo); }
+.botao-rolo > span + span { position: absolute; inset: 2px 0 auto 0; transform: translate3d(0, 110%, 0); }
+.botao-seta { width: 18px; height: 18px; flex: none; transition: transform .6s var(--ease-luxo); }
+@media (hover: hover) {
+  .botao:hover { color: var(--b-hover-texto); box-shadow: 0 0 0 1px rgb(63 224 255 / .4), 0 0 38px rgb(63 224 255 / .38); }
+  .botao:hover::before { transform: none; }
+  .botao:hover .botao-icone { transform: rotate(-12deg) scale(1.04); }
+  .botao:hover .botao-rolo > span:first-child { transform: translate3d(0, -110%, 0); }
+  .botao:hover .botao-rolo > span + span { transform: none; }
+  .botao:hover .botao-seta { transform: translate3d(3px, -3px, 0); }
+}
+.botao-contorno { --b-fundo: transparent; --b-texto: var(--color-marfim); --b-hover: var(--color-marfim); --b-icone: rgb(242 238 230 / .1); box-shadow: inset 0 0 0 1px var(--linha-forte); }
+.botao-neon {
+  --b-fundo: rgb(63 224 255 / .06); --b-texto: var(--color-ciano-claro); --b-hover: var(--color-ciano);
+  --b-icone: var(--color-ciano); --b-icone-cor: var(--color-noite);
+  box-shadow: inset 0 0 0 1.5px var(--color-ciano), 0 0 26px rgb(63 224 255 / .35), inset 0 0 18px rgb(63 224 255 / .16);
+  text-shadow: 0 0 10px rgb(63 224 255 / .6);
+}
+@media (hover: hover) { .botao-neon:hover { text-shadow: none; } .botao-neon:hover .botao-icone { background: var(--color-noite); color: var(--color-ciano); } }
+
+.link-linha {
+  position: relative; display: inline-flex; align-items: center; gap: 10px;
+  padding-block: 8px;
+  font-weight: 600; font-size: .98rem; color: var(--color-marfim);
+}
+.link-linha::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 3px; height: 1px;
+  background: currentColor; transform-origin: right; transition: transform .6s var(--ease-luxo);
+}
+.link-linha svg { width: 17px; height: 17px; flex: none; transition: transform .6s var(--ease-luxo); }
+@media (hover: hover) {
+  .link-linha:hover::after { transform: scaleX(0); }
+  .link-linha:hover svg { transform: translate3d(0, 3px, 0); }
+}
+
+/* ---------- Poste de barbearia (listras girando no vidro) ---------- */
+.poste { position: relative; }
+.poste-img { position: relative; width: 100%; height: auto; }
+.poste-vidro { position: absolute; overflow: hidden; container-type: inline-size; border-radius: 2px; }
+.poste-listras {
+  position: absolute; left: 0; right: 0; top: -110cqw; bottom: -110cqw;
+  background: repeating-linear-gradient(135deg,
+    var(--color-poste-azul) 0 18cqw, #F3F3F1 18cqw 36cqw,
+    var(--color-poste-vermelho) 36cqw 54cqw, #F3F3F1 54cqw 72cqw);
+  will-change: transform;
+}
+.poste.is-girando .poste-listras { animation: poste-gira 2.6s linear infinite; }
+@keyframes poste-gira { to { transform: translate3d(0, -101.82cqw, 0); } }
+.poste-sombra {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgb(0 0 0 / .5) 0%, rgb(0 0 0 / .1) 20%, rgb(255 255 255 / .34) 32%, rgb(255 255 255 / 0) 44%, rgb(0 0 0 / .06) 70%, rgb(0 0 0 / .55) 100%),
+    linear-gradient(180deg, rgb(0 0 0 / .35), transparent 10%, transparent 90%, rgb(0 0 0 / .35));
+}
+
+/* ---------- Movimento reduzido / pausado ---------- */
+.movimento-pausado .anima-continua, .movimento-pausado .anima-continua *, .movimento-pausado .poste-listras { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

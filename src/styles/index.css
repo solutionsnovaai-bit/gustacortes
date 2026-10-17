@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./fontes.css";
+@import "./tema.css";
+@import "./base.css";
+@import "./abertura.css";
+@import "./topo.css";
+@import "./hero.css";
+@import "./secoes.css";
+@import "./fab.css";

@@ -1,0 +1,44 @@
+/*
+  Cores e tokens, tirados da própria barbearia:
+  noite (a parede de mármore preto), marfim (o texto, como papel de alfaiataria), cromo (o metal dos postes),
+  ciano (o GUSTA e os bigodes do letreiro), violeta (o CORTE$), verde (o cifrão) e as listras do poste.
+*/
+@theme {
+  --color-noite: #050506;
+  --color-noite-2: #0A0B0D;
+  --color-grafite: #121317;
+  --color-grafite-2: #1B1D22;
+  --color-marfim: #F2EEE6;
+  --color-marfim-2: #CFCAC0;
+  --color-cromo: #C9CDD3;
+  --color-ciano: #3FE0FF;
+  --color-ciano-claro: #DFFBFF;
+  --color-violeta: #C24BFF;
+  --color-violeta-claro: #F4E4FF;
+  --color-verde: #3DFF7E;
+  --color-whatsapp: #25D366;
+  --color-poste-vermelho: #D41F2A;
+  --color-poste-azul: #1F3DBF;
+
+  --font-serif: 'Bodoni Moda', 'Bodoni Reserva', 'Didot', 'Times New Roman', serif;
+  --font-sans: 'Manrope', 'Manrope Reserva', ui-sans-serif, system-ui, sans-serif;
+  --font-neon: 'Quicksand', 'Manrope', ui-rounded, system-ui, sans-serif;
+
+  --ease-luxo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-cortina: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-mola: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root {
+  --margem: clamp(20px, 5.5vw, 84px);
+  --largura: 1440px;
+  --topo-h: 78px;
+  --secao-y: clamp(110px, 14vw, 220px);
+  --linha: rgb(242 238 230 / .11);
+  --linha-forte: rgb(242 238 230 / .22);
+  --texto-2: rgb(242 238 230 / .66);
+  --texto-3: rgb(242 238 230 / .48);
+  --brilho-ciano: 0 0 1px #fff, 0 0 6px var(--color-ciano), 0 0 18px rgb(63 224 255 / .65), 0 0 42px rgb(63 224 255 / .35);
+  --brilho-violeta: 0 0 1px #fff, 0 0 6px var(--color-violeta), 0 0 18px rgb(194 75 255 / .65), 0 0 42px rgb(194 75 255 / .35);
+}
+@media (max-width: 767px) { :root { --topo-h: 64px; } }

@@ -1,0 +1,49 @@
+/*
+  Bodoni Moda (serifa Didone, variável: peso 400–900 e tamanho óptico 6–96), Manrope (texto) e Quicksand (neon),
+  servidas pelo próprio site. Licença em /fonts/LICENCA-FONTES.txt.
+*/
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('/fonts/bodoni-moda.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('/fonts/bodoni-moda-italico.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/manrope.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Quicksand';
+  src: url('/fonts/quicksand.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+/* Reservas com métricas parecidas, para o texto não pular quando a fonte chega. */
+@font-face {
+  font-family: 'Bodoni Reserva';
+  src: local('Didot'), local('Bodoni 72'), local('Times New Roman');
+  size-adjust: 96%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Manrope Reserva';
+  src: local('Arial'), local('Helvetica Neue'), local('Helvetica');
+  size-adjust: 104%;
+  ascent-override: 102%;
+  descent-override: 29%;
+  line-gap-override: 0%;
+}

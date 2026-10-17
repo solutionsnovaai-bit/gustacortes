@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="__COR_TEMA__" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>__TITULO__</title>
+    <meta name="description" content="__DESCRICAO__" />
+    <link rel="canonical" href="__SITE_ORIGIN__/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="__NOME__" />
+    <meta property="og:url" content="__SITE_ORIGIN__/" />
+    <meta property="og:title" content="__COMPARTILHAR_TITULO__" />
+    <meta property="og:description" content="__COMPARTILHAR_TEXTO__" />
+    <meta property="og:image" content="__SITE_ORIGIN__/og.jpg" />
+    <meta property="og:image:secure_url" content="__SITE_ORIGIN__/og.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="__IMAGEM_ALT__" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="__COMPARTILHAR_TITULO__" />
+    <meta name="twitter:description" content="__COMPARTILHAR_TEXTO__" />
+    <meta name="twitter:image" content="__SITE_ORIGIN__/og.jpg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/bodoni-moda.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/manrope.woff2" crossorigin />
+    <link rel="preload" as="image" type="image/avif" href="/hero/hero-desktop.avif" media="(min-aspect-ratio: 23/20) and (min-width: 700px)" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/avif" href="/hero/hero-mobile.avif" media="not all and (min-aspect-ratio: 23/20), (max-width: 699px)" fetchpriority="high" />
+    <link rel="preload" as="image" type="image/avif" href="/itens/poste.avif" />
+    <script>
+      /* Decide a abertura antes do primeiro quadro: completa na 1ª visita, rápida ao voltar, nenhuma com "reduzir movimento". */
+      (function () {
+        var modo = 'completa'
+        try { if (sessionStorage.getItem('gusta-abertura')) modo = 'rapida' } catch (e) {}
+        try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) modo = 'nenhuma' } catch (e) {}
+        document.documentElement.setAttribute('data-abertura', modo)
+      })()
+    </script>
+    <style>
+      html,body{background:__COR_FUNDO__}
+      .abertura-estatica{position:fixed;inset:0;z-index:100;background:#050506;animation:abertura-seguranca .6s ease 9s forwards}
+      html[data-abertura="nenhuma"] .abertura-estatica{display:none}
+      @keyframes abertura-seguranca{to{opacity:0;visibility:hidden}}
+    </style>
+  </head>
+  <body>
+    <div id="root"><div class="abertura-estatica" aria-hidden="true"></div></div>
+    <noscript><style>.abertura-estatica{display:none}</style><p style="font:18px/1.6 system-ui,sans-serif;padding:40px;color:#F2EEE6">__SEM_JS__</p></noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

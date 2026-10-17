@@ -1,0 +1,98 @@
+/* ---------- Topo: a parede de mármore com o letreiro de neon ---------- */
+.hero { position: relative; isolation: isolate; overflow: hidden; background: var(--color-noite); }
+.hero.modo-d { container-type: size; height: max(100svh, 640px); }
+.hero.modo-m { min-height: 100svh; }
+
+.hero-fundo {
+  position: absolute; inset: 0; z-index: 0;
+  background-image: image-set(url('/fundo/marmore.avif') type('image/avif'), url('/fundo/marmore.webp') type('image/webp'));
+  background-size: cover; background-position: center; opacity: .5;
+}
+
+/* O palco tem a proporção exata da arte: assim cada peça do letreiro fica no lugar certo das máscaras. */
+.palco-pos { position: absolute; inset: 0; z-index: 1; display: flex; overflow: hidden; pointer-events: none; }
+.modo-d .palco-pos { align-items: center; justify-content: flex-end; }
+.modo-m .palco-pos { align-items: flex-start; justify-content: center; }
+.palco-rolagem { position: relative; flex: none; will-change: transform; }
+.modo-d .palco-rolagem { aspect-ratio: 1672 / 941; width: min(100cqw, calc(100cqh * 2.55)); transform-origin: 72% 46%; }
+.modo-m .palco-rolagem { aspect-ratio: 941 / 1672; width: 100%; transform-origin: 50% 24%; }
+.palco { position: absolute; inset: 0; }
+.modo-d .palco {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 16%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 94%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0%, #000 16%), linear-gradient(to bottom, transparent 0%, #000 6%, #000 94%, transparent 100%);
+  mask-composite: intersect;
+}
+.modo-m .palco {
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 97%);
+  mask-image: linear-gradient(to bottom, #000 58%, transparent 97%);
+}
+.camada {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  user-select: none; -webkit-user-drag: none;
+}
+/* Neon desligado: a mesma foto, sem cor e no escuro (os tubos viram vidro apagado). */
+.palco-apagado { filter: grayscale(1) brightness(.3) contrast(1.18); }
+.palco-tubo, .palco-aceso, .palco-falha { opacity: 0; }
+.palco-falha { filter: grayscale(1) brightness(.28) contrast(1.15); }
+.hero.is-aceso .palco-aceso, html[data-abertura="nenhuma"] .palco-aceso { opacity: 1; }
+
+/* Luz do mouse passeando pelo mármore (só com mouse). */
+.hero-luz {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle 360px at var(--lx, 50%) var(--ly, 50%), rgb(150 220 255 / .09), transparent 70%);
+  mix-blend-mode: screen; transition: opacity .9s var(--ease-luxo);
+}
+.hero.com-luz .hero-luz { opacity: 1; }
+
+/* Sombra fixa para o texto respirar; o véu escurece com a rolagem. */
+.hero-sombra { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.modo-d .hero-sombra {
+  background:
+    linear-gradient(90deg, rgb(5 5 6 / .82) 0%, rgb(5 5 6 / .55) 24%, rgb(5 5 6 / 0) 46%),
+    linear-gradient(0deg, rgb(5 5 6 / .7) 0%, transparent 22%),
+    linear-gradient(180deg, rgb(5 5 6 / .55) 0%, transparent 16%);
+}
+.modo-m .hero-sombra {
+  background:
+    linear-gradient(180deg, rgb(5 5 6 / .5) 0%, transparent 12%, transparent 52%, rgb(5 5 6 / .78) 74%, var(--color-noite) 100%);
+}
+.hero-veu { position: absolute; inset: 0; z-index: 3; background: var(--color-noite); opacity: 0; pointer-events: none; }
+
+/* Texto */
+.hero-conteudo { position: relative; z-index: 4; }
+.modo-d .hero-conteudo {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  padding: var(--topo-h) var(--margem) 0;
+}
+.modo-d .hero-texto { width: min(calc(37cqw - var(--margem)), 620px); }
+.modo-m .hero-conteudo { padding: 72vw var(--margem) calc(64px + env(safe-area-inset-bottom)); }
+
+.hero-rotulo { margin-bottom: clamp(18px, 2.6vh, 28px); }
+.hero-titulo { font-size: clamp(3rem, 14.2vw, 5.6rem); }
+.modo-d .hero-titulo { font-size: min(6.2cqw, 11.5cqh, 8.4rem); }
+.hero-titulo .italico { color: var(--color-marfim); }
+.hero-lead { margin-top: clamp(20px, 3vh, 30px); }
+.modo-d .hero-lead { max-width: 38ch; }
+.hero-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin-top: clamp(26px, 4vh, 40px); }
+.hero-base {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 26px;
+  margin-top: clamp(26px, 4.4vh, 46px); padding-top: 18px; border-top: 1px solid var(--linha);
+  font-size: .84rem; color: var(--texto-2);
+}
+.hero-base-rotulo { color: var(--texto-3); }
+.hero-base .num { font-family: var(--font-serif); font-style: italic; font-size: 1.12rem; color: var(--color-marfim); }
+.hero-insta { display: inline-flex; align-items: center; gap: 8px; transition: color .4s; }
+.hero-insta svg { width: 16px; height: 16px; }
+@media (hover: hover) { .hero-insta:hover { color: var(--color-marfim); } }
+
+.hero-rolar {
+  position: absolute; z-index: 4; bottom: 26px; left: 0; right: 0; width: fit-content; margin-inline: auto;
+  display: flex; align-items: center; gap: 12px;
+  font-size: .66rem; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; color: var(--texto-3);
+}
+.hero-rolar-fio { position: relative; width: 1px; height: 46px; overflow: hidden; background: var(--linha); }
+.hero-rolar-fio span { position: absolute; left: 0; top: 0; width: 1px; height: 46%; background: var(--color-marfim); animation: rolar 2.4s var(--ease-cortina) infinite; }
+@keyframes rolar { 0% { transform: translateY(-110%); } 100% { transform: translateY(230%); } }
+.modo-m .hero-rolar { display: none; }
